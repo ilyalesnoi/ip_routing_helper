@@ -98,6 +98,13 @@ int main ( int argc, char * argv[] )
                     ||detectRouting.back().run_read_output().find("SNAT") != std::string::npos);
         };
 
+        if(checkRouteEnable()) {
+                // случай запуска, но уже готовой маршрутиризации, определяем индексы нужных нам записей
+                disableRouting.assign(settings.getCommands("ip_routing_disable_commands"));
+                disableRouting.reset_by_index(make_delete_command(detectRouting.front().run_read_output(), disableRouting[1].to_string(), preroute_find_pattern), 1);
+                disableRouting.reset_by_index(make_delete_command(detectRouting.back().run_read_output(),  disableRouting[2].to_string(), postroute_find_pattern), 2);
+        }
+
         while(true) {
             bool remoteHostIsAvaible =
                     std::string::npos != detectRemoteHost.run_read_output().find(settings.getValue("DETECT_COM_SUCCESS_PATTERN"));
@@ -105,6 +112,8 @@ int main ( int argc, char * argv[] )
             if (remoteHostIsAvaible && !checkRouteEnable()) {
                 std::cout << "\tavaible remote host, IP_FORWARD ENABLE (remote host online) with commands:\n" << enableRouting<< '\n';
                 enableRouting.run();
+                // если роутинга не было, не было и записей - теперь генерируем по записям строки удаления
+                disableRouting.assign(settings.getCommands("ip_routing_disable_commands"));
                 disableRouting.reset_by_index(make_delete_command(detectRouting.front().run_read_output(), disableRouting[1].to_string(), preroute_find_pattern), 1);
                 disableRouting.reset_by_index(make_delete_command(detectRouting.back().run_read_output(),  disableRouting[2].to_string(), postroute_find_pattern), 2);
             }

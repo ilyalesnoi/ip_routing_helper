@@ -25,6 +25,7 @@ Command &CommandList::push_to_index(const std::string &comm_str, size_t index)
 
 void CommandList::assign(const std::vector<std::string> &commandList)
 {
+    m_CommandList.clear();
     for(auto &com : commandList) {
         m_CommandList.push_back(com);
     }
